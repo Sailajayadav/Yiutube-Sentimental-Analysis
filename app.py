@@ -93,49 +93,65 @@ try:
             AgGrid(df_replies.head(10), gridOptions=gridoptions2, theme='streamlit')
             
             # Sentiments of the Commentors
-            st.subheader("Reviews") 
+            st.subheader("📊 Reviews (Sentiment Analysis)") 
+            
+            # Filter English comments for sentiment analysis
             sentiments = df[df['Language'] == 'English']
-            data_sentiments = sentiments['TextBlob_Sentiment_Type'].value_counts(
-            ).rename_axis('Sentiment').reset_index(name='counts')
+            data_sentiments = sentiments['TextBlob_Sentiment_Type'].value_counts().rename_axis('Sentiment').reset_index(name='counts')
 
-            data_sentiments['Review_percent'] = (
-                100. * data_sentiments['counts'] / data_sentiments['counts'].sum()).round(1)
+            # Calculate percentage of each sentiment
+            data_sentiments['Review_percent'] = (100. * data_sentiments['counts'] / data_sentiments['counts'].sum()).round(1)
 
+            # Convert DataFrame to JSON for visualization
             result = data_sentiments.to_json(orient="split")
             parsed = json.loads(result)
 
-            options = {
-                "tooltip": {"trigger": "item",
-                            "formatter": '{d}%'},
-                "legend": {"top": "5%", "left": "center"},
-                "series": [
-                    {
-                        "name": "Sentiment",
-                        "type": "pie",
-                        "radius": ["40%", "70%"],
-                        "avoidLabelOverlap": False,
-                        "itemStyle": {
-                            "borderRadius": 10,
-                            "borderColor": "#fff",
-                            "borderWidth": 2,
-                        },
-                        "label": {"show": False, "position": "center"},
-                        "emphasis": {
-                            "label": {"show": True, "fontSize": "30", "fontWeight": "bold"}
-                        },
-                        "labelLine": {"show": False},
-                        "data": [
-                            {"value": parsed['data'][1][2], "name": parsed['data'][1][0], "itemStyle": {"color": "#008000"}},  # Positive (Green)
-                            {"value": parsed['data'][0][2], "name": parsed['data'][0][0], "itemStyle": {"color": "#808080"}},  # Neutral (Gray)
-                            {"value": parsed['data'][2][2], "name": parsed['data'][2][0], "itemStyle": {"color": "#FF0000"}}   # Negative (Red)
-                        ],
-                    }
-                ],
+           # Define a fixed color mapping
+    color_mapping = {
+        "positive": "#008000",  # Green
+        "neutral": "#808080",   # Gray
+        "negative": "#FF0000"   # Red
+    }
+
+    # Generate the pie chart data dynamically
+    data_values = []
+    for sentiment, count, percent in parsed["data"]:
+        normalized_sentiment = sentiment.strip().lower()  # Normalize case and remove spaces
+        sentiment_color = color_mapping.get(normalized_sentiment, "#000000")  # Default black if not found
+        data_values.append({
+            "value": percent,
+            "name": sentiment,
+            "itemStyle": {"color": sentiment_color}
+        })
+
+    # ECharts Pie Chart Options
+    options = {
+        "tooltip": {"trigger": "item", "formatter": '{d}%'},
+        "legend": {"top": "5%", "left": "center"},
+        "series": [
+            {
+                "name": "Sentiment",
+                "type": "pie",
+                "radius": ["40%", "70%"],
+                "avoidLabelOverlap": False,
+                "itemStyle": {
+                    "borderRadius": 10,
+                    "borderColor": "#fff",
+                    "borderWidth": 2,
+                },  
+                "label": {"show": False, "position": "center"},
+                "emphasis": {
+                    "label": {"show": True, "fontSize": "30", "fontWeight": "bold"}
+                },
+                "labelLine": {"show": False},
+                "data": data_values,  # Use dynamically generated list
             }
-            st_echarts(
-                options=options, height="500px",
-            )
+        ],
+    }
+
+    # Display the sentiment pie chart
+    st_echarts(options=options, height="500px")
+
 
 except:
-    st.error(
-        ' The URL Should be of the form: https://www.youtube.com/watch?v=videoID', icon="🚨")
+    st.error(' The URL Should be of the form: https://www.youtube.com/watch?v=videoID', icon="🚨")
