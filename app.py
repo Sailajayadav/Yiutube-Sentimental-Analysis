@@ -125,15 +125,9 @@ try:
                         },
                         "labelLine": {"show": False},
                         "data": [
-                            # NEUTRAL
-                            {"value": parsed['data'][1][2],
-                             "name": parsed['data'][1][0]},
-                            # POSITIVE
-                            {"value": parsed['data'][0][2],
-                             "name": parsed['data'][0][0]},
-                            # NEGATIVE
-                            {"value": parsed['data'][2][2],
-                             "name": parsed['data'][2][0]}
+                            {"value": parsed['data'][1][2], "name": parsed['data'][1][0], "itemStyle": {"color": "#008000"}},  # Positive (Green)
+                            {"value": parsed['data'][0][2], "name": parsed['data'][0][0], "itemStyle": {"color": "#808080"}},  # Neutral (Gray)
+                            {"value": parsed['data'][2][2], "name": parsed['data'][2][0], "itemStyle": {"color": "#FF0000"}}   # Negative (Red)
                         ],
                     }
                 ],
